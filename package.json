@@ -33,5 +33,10 @@
     "inquirer": "^7.0.0",
     "ora": "^4.0.2",
     "shelljs": "^0.8.3"
+  },
+  "devDependencies": {
+    "eslint": "^6.5.1",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2"
   }
 }
