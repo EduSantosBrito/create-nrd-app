@@ -6,9 +6,16 @@ const chalk = require('chalk');
 const figlet = require('figlet');
 const ora = require('ora');
 const fs = require('fs');
-const { spawn, exec } = require('child_process');
+const spawnAsync = require('@expo/spawn-async');
 const packageJSON = require('./package.json');
-const { getDockerComposeJson, getTsConfig, getServerPackageJson } = require('./template');
+const {
+    getDockerComposeJson,
+    getTsConfig,
+    getServerPackageJson,
+    getServerIndexExpress,
+    getServerProdDockerFile,
+    getServerDevDockerFile,
+} = require('./functions');
 
 program.version(packageJSON.version);
 
@@ -49,13 +56,15 @@ async function generatePackageJson(projectName) {
         },
         {
             name: 'license',
-            message: `What is the project license? ${chalk.yellow('(optional)')}`,
-            default: null,
+            message: 'What is the project license?',
+            default: 'ISC',
         },
     ]).then((values) => {
         spinner.render('Creating package.json');
         fs.writeFile(`${process.cwd()}/${projectName}/package.json`, JSON.stringify(values, null, 2), (err) => {
-            if (err) { throw err; }
+            if (err) {
+                throw err;
+            }
             spinner.succeed(`${chalk.green('package.json')} created!`);
         });
     });
@@ -64,7 +73,9 @@ async function generatePackageJson(projectName) {
 async function generateDockerComposeProdJson(projectName) {
     spinner.render('Creating docker-compose.json');
     return fs.writeFile(`${process.cwd()}/${projectName}/docker-compose.json`, JSON.stringify(getDockerComposeJson(projectName, 'production'), null, 2), (err) => {
-        if (err) { throw err; }
+        if (err) {
+            throw err;
+        }
         spinner.succeed(`${chalk.green('docker-compose.json')} created!`);
     });
 }
@@ -72,7 +83,9 @@ async function generateDockerComposeProdJson(projectName) {
 async function generateDockerComposeDevJson(projectName) {
     spinner.render('Creating docker-compose.dev.json');
     return fs.writeFile(`${process.cwd()}/${projectName}/docker-compose.dev.json`, JSON.stringify(getDockerComposeJson(projectName, 'development'), null, 2), (err) => {
-        if (err) { throw err; }
+        if (err) {
+            throw err;
+        }
         spinner.succeed(`${chalk.green('docker-compose.dev.json')} created!`);
     });
 }
@@ -80,30 +93,53 @@ async function generateDockerComposeDevJson(projectName) {
 async function generateTsConfigJson(projectName) {
     spinner.render('Creating server/tsconfig.json');
     return fs.writeFile(`${process.cwd()}/${projectName}/server/tsconfig.json`, JSON.stringify(getTsConfig(), null, 2), (err) => {
-        if (err) { throw err; }
+        if (err) {
+            throw err;
+        }
         spinner.succeed(`${chalk.green('server/tsconfig.json')} created!`);
     });
 }
 
 async function generateServerPackageJson(projectName, isNpm) {
-    return fs.writeFile(`${process.cwd()}/${projectName}/server/package.json`, JSON.stringify(getServerPackageJson(projectName), null, 2), (err) => {
-        if (err) { throw err; }
-        spinner.succeed(`${chalk.green('server/package.json')} created!`);
-        if (isNpm) {
-            exec(`cd ./${projectName}/server && npm install && cd ../..`, (err, stdout, stderr) => {
-                if (err) {
-                    console.error(err);
-                }
-            });
-        } else {
-            exec(`cd ./${projectName}/server && yarn && cd ../..`, (err, stdout, stderr) => {
-                if (err) {
-                    console.error(err);
-                } else {
-                    console.log(stdout);
-                }
-            });
+    return fs.writeFile(`${process.cwd()}/${projectName}/server/package.json`, JSON.stringify(getServerPackageJson(projectName), null, 2), async (err) => {
+        if (err) {
+            throw err;
         }
+        spinner.succeed(`${chalk.green('server/package.json')} created!`);
+        const packageInstallProcessAsync = spawnAsync(`cd ./${projectName}/server && ${isNpm ? 'npm' : 'yarn'} install && cd ../..`, { shell: true });
+        packageInstallProcessAsync.child.stdout.on('data', (data) => {
+            console.log(data.toString());
+        });
+    });
+}
+
+async function generateIndexServer(projectName) {
+    spinner.render('Creating server/index.ts');
+    await fs.writeFile(`${process.cwd()}/${projectName}/server/src/index.ts`, getServerIndexExpress(), (err) => {
+        if (err) {
+            throw err;
+        }
+        spinner.succeed(`${chalk.green('server/src/index.ts')} created!`);
+    });
+}
+
+async function generateServerProdDockerFile(projectName) {
+    spinner.render('Creating server/Dockerfile');
+    await fs.writeFile(`${process.cwd()}/${projectName}/server/Dockerfile`, getServerProdDockerFile(), (err) => {
+        if (err) {
+            throw err;
+        }
+        spinner.succeed(`${chalk.green('server/Dockerfile')} created!`);
+    });
+}
+
+async function generateServerDevDockerFile(projectName) {
+    spinner.render('Creating server/dev.Dockerfile');
+    await fs.writeFile(`${process.cwd()}/${projectName}/server/dev.Dockerfile`, getServerDevDockerFile(), (err) => {
+        if (err) {
+            throw err;
+        }
+        spinner.succeed(`${chalk.green('server/dev.Dockerfile')} created!`);
     });
 }
 
@@ -114,12 +150,16 @@ program
         console.log(`Starting ${chalk.cyan('create-nrd-app')}...`);
         await generateFolder(projectName);
         await generateFolder(`${projectName}/server`);
+        await generateFolder(`${projectName}/server/src`);
         await generateFolder(`${projectName}/client`);
         await generatePackageJson(projectName);
         await generateDockerComposeProdJson(projectName);
         await generateDockerComposeDevJson(projectName);
         await generateTsConfigJson(projectName);
         await generateServerPackageJson(projectName, options.useNpm);
+        await generateIndexServer(projectName);
+        await generateServerDevDockerFile(projectName);
+        await generateServerProdDockerFile(projectName);
     });
 
 program.parse(process.argv);

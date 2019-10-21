@@ -115,15 +115,16 @@ function getServerPackageJson(projectName) {
         scripts: {
             build: 'tsc',
         },
+        license: 'ISC',
         devDependencies: {
             typescript: '^3.6.2',
             '@types/express': '^4.17.1',
-        },
-        dependencies: {
-            '@typegoose/typegoose': '^5.9.1',
             '@types/cors': '^2.8.6',
             '@types/mongoose': '^5.5.17',
             '@types/node': '^12.7.4',
+        },
+        dependencies: {
+            '@typegoose/typegoose': '^5.9.1',
             'body-parser': '^1.19.0',
             cors: '^2.8.5',
             express: '^4.17.1',
@@ -132,4 +133,90 @@ function getServerPackageJson(projectName) {
     };
 }
 
-module.exports = { getDockerComposeJson, getTsConfig, getServerPackageJson };
+function getServerIndexExpress() {
+    return `
+    import bodyParser from 'body-parser';
+    import cors from 'cors';
+    import express from 'express';
+    import mongoose from 'mongoose';
+    
+    const {
+        MONGODB_DATABASE,
+        MONGODB_HOST,
+        MONGODB_PORT,
+    } = process.env;
+    
+    const app = express();
+    
+    app.use(cors());
+    app.use(bodyParser.json());
+    
+    const mongoURI = \`mongodb://\${MONGODB_HOST}:\${MONGODB_PORT}/\${MONGODB_DATABASE}\`;
+    mongoose.connect(mongoURI, { useNewUrlParser: true });
+    
+    app.get('/', (req, res) => res.send('Hello World'));
+    
+    app.listen(process.env.NODE_PORT || 3000);
+    `;
+}
+
+function getServerProdDockerFile() {
+    return `FROM node:12.8-slim
+
+    # Create app directory
+    WORKDIR /usr/src/server
+    
+    
+    # Install app dependencies
+    # A wildcard is used to ensure both package.json AND package-lock.json are copied
+    # where available (npm@5+)
+    COPY package*.json ./
+    
+    RUN npm install
+    # If you are building your code for production
+    # RUN npm ci --only=production
+    
+    # Bundle app source
+    COPY . . 
+    
+    RUN npm run build
+    
+    EXPOSE 3001
+    
+    CMD [ "node", "./dist/index.js" ]`;
+}
+
+function getServerDevDockerFile() {
+    return `FROM node:12.8-slim
+
+    # Create app directory
+    WORKDIR /usr/src/server
+    
+    
+    # Install app dependencies
+    # A wildcard is used to ensure both package.json AND package-lock.json are copied
+    # where available (npm@5+)
+    COPY package*.json ./
+    
+    RUN npm install
+    # If you are building your code for production
+    # RUN npm ci --only=production
+    
+    # Bundle app source
+    COPY . .
+    
+    RUN npm install -g nodemon ts-node
+    
+    EXPOSE 3001
+    
+    CMD ["nodemon", "./src/index.ts"]`;
+}
+
+module.exports = {
+    getDockerComposeJson,
+    getTsConfig,
+    getServerPackageJson,
+    getServerIndexExpress,
+    getServerProdDockerFile,
+    getServerDevDockerFile,
+};
