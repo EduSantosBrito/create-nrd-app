@@ -7,7 +7,7 @@ Create Node-React-Docker apps easily.
 
 Create Nrd App works on macOS and Linux.<br>
 This repository uses [create-react-app](https://github.com/facebook/create-react-app) to build client app.<br>
-This repository is based on [create-react-app](https://github.com/facebook/create-react-app) idea, thank you guys ❤️
+This repository is based on [create-react-app](https://github.com/facebook/create-react-app) idea, thank you guys ❤️<br>
 If something doesn’t work, please [file an issue](https://github.com/EduSantosBrito/create-nrd-app/issues/new).<br>
 
 ## Quick Overview
