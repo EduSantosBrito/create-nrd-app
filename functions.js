@@ -135,81 +135,167 @@ function getServerPackageJson(projectName) {
 
 function getServerIndexExpress() {
     return `
-    import bodyParser from 'body-parser';
-    import cors from 'cors';
-    import express from 'express';
-    import mongoose from 'mongoose';
-    
-    const {
-        MONGODB_DATABASE,
-        MONGODB_HOST,
-        MONGODB_PORT,
-    } = process.env;
-    
-    const app = express();
-    
-    app.use(cors());
-    app.use(bodyParser.json());
-    
-    const mongoURI = \`mongodb://\${MONGODB_HOST}:\${MONGODB_PORT}/\${MONGODB_DATABASE}\`;
-    mongoose.connect(mongoURI, { useNewUrlParser: true });
-    
-    app.get('/', (req, res) => res.send('Hello World'));
-    
-    app.listen(process.env.NODE_PORT || 3000);
-    `;
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import express from 'express';
+import mongoose from 'mongoose';
+
+const {
+    MONGODB_DATABASE,
+    MONGODB_HOST,
+    MONGODB_PORT,
+} = process.env;
+
+const app = express();
+
+app.use(cors());
+app.use(bodyParser.json());
+
+const mongoURI = \`mongodb://\${MONGODB_HOST}:\${MONGODB_PORT}/\${MONGODB_DATABASE}\`;
+mongoose.connect(mongoURI, { useNewUrlParser: true });
+
+app.get('/', (req, res) => res.send('Hello World'));
+
+app.listen(process.env.NODE_PORT || 3000);
+`;
 }
 
-function getServerProdDockerFile() {
+function getServerProdDockerfile() {
     return `FROM node:12.8-slim
 
-    # Create app directory
-    WORKDIR /usr/src/server
-    
-    
-    # Install app dependencies
-    # A wildcard is used to ensure both package.json AND package-lock.json are copied
-    # where available (npm@5+)
-    COPY package*.json ./
-    
-    RUN npm install
-    # If you are building your code for production
-    # RUN npm ci --only=production
-    
-    # Bundle app source
-    COPY . . 
-    
-    RUN npm run build
-    
-    EXPOSE 3001
-    
-    CMD [ "node", "./dist/index.js" ]`;
+# Create app directory
+WORKDIR /usr/src/server
+
+
+# Install app dependencies
+# A wildcard is used to ensure both package.json AND package-lock.json are copied
+# where available (npm@5+)
+COPY package*.json ./
+
+RUN npm install
+# If you are building your code for production
+# RUN npm ci --only=production
+
+# Bundle app source
+COPY . . 
+
+RUN npm run build
+
+EXPOSE 3001
+
+CMD [ "node", "./dist/index.js" ]`;
 }
 
-function getServerDevDockerFile() {
+function getServerDevDockerfile() {
     return `FROM node:12.8-slim
+# Create app directory
+WORKDIR /usr/src/server
 
-    # Create app directory
-    WORKDIR /usr/src/server
-    
-    
-    # Install app dependencies
-    # A wildcard is used to ensure both package.json AND package-lock.json are copied
-    # where available (npm@5+)
-    COPY package*.json ./
-    
-    RUN npm install
-    # If you are building your code for production
-    # RUN npm ci --only=production
-    
-    # Bundle app source
-    COPY . .
-    
-    RUN npm install -g nodemon ts-node
-    
-    EXPOSE 3001
-    
-    CMD ["nodemon", "./src/index.ts"]`;
+
+# Install app dependencies
+# A wildcard is used to ensure both package.json AND package-lock.json are copied
+# where available (npm@5+)
+COPY package*.json ./
+
+RUN npm install
+# If you are building your code for production
+# RUN npm ci --only=production
+
+# Bundle app source
+COPY . .
+
+RUN npm install -g nodemon ts-node
+
+EXPOSE 3001
+
+CMD ["nodemon", "./src/index.ts"]`;
+}
+
+function getDockerignore() {
+    return `
+Dockerfile
+.dockerignore
+.gitignore
+README.md
+
+build
+node_modules`;
+}
+
+function getNginxConfigFile(projectName) {
+    return `
+server {
+    listen 80;
+    server_name ${projectName};
+
+    location / {
+    root   /usr/share/nginx/html;
+    index  index.html index.htm;
+    try_files $uri $uri/ /index.html;
+    }
+}`;
+}
+
+function getGitignore() {
+    return `# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*`;
+}
+
+function getClientProdDockerfile() {
+    return `FROM node:12.8-slim as build
+
+WORKDIR /usr/src/app
+
+COPY package.json .
+
+COPY . .
+
+ENV PATH /usr/src/app/node_modules/.bin:$PATH
+
+RUN npm install
+RUN npm run build --production
+
+FROM nginx:1.17.3-alpine
+
+RUN rm -rf /etc/nginx/conf.d
+COPY conf /etc/nginx
+
+COPY --from=build /usr/src/app/build /usr/share/nginx/html
+
+CMD ["nginx", "-g", "daemon off;"]`;
+}
+
+function getClientDevDockerfile() {
+    return `FROM node:12.8-slim
+WORKDIR /usr/src/app
+COPY package.json .
+ENV PATH /usr/src/app/node_modules/.bin:$PATH
+
+RUN npm install --silent
+RUN npm install react-scripts@3.0.1 -g --silent
+EXPOSE 3000
+CMD ["npm", "start"]`;
 }
 
 module.exports = {
@@ -217,6 +303,11 @@ module.exports = {
     getTsConfig,
     getServerPackageJson,
     getServerIndexExpress,
-    getServerProdDockerFile,
-    getServerDevDockerFile,
+    getServerProdDockerfile,
+    getServerDevDockerfile,
+    getDockerignore,
+    getNginxConfigFile,
+    getGitignore,
+    getClientDevDockerfile,
+    getClientProdDockerfile,
 };
