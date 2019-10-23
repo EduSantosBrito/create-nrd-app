@@ -1,9 +1,11 @@
 {
   "name": "@brito/create-nrd-app",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "CLI that generates node-react-docker app",
   "homepage": "https://github.com/EduSantosBrito/create-nrd-app#readme",
-  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/EduSantosBrito/create-nrd-app.git"
