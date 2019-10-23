@@ -228,11 +228,10 @@ async function generateNginxConfigFile(projectName) {
 async function executeCreateReactApp(projectName, isNpm) {
     spinnies.add('execute-create-react-app', { text: `Executing create-react-app with ${chalk.yellow(isNpm ? 'npx create-react-app' : 'yarn create react-app')}` });
     try {
-        await spawnAsync(`cd ./${projectName} && ${isNpm ? 'npx create-react-app' : 'yarn create react-app'} client && cd ..`, { shell: true });
+        await spawnAsync(`cd ./${projectName} && ${isNpm ? 'npm init react-app client --use-npm' : 'yarn create react-app client'} && cd ..`, { shell: true });
         spinnies.succeed('execute-create-react-app', { text: 'create-react-app finished!' });
     } catch (error) {
-        console.error(error.stdout);
-        spinnies.fail('execute-create-react-app', { text: 'create-react-app failed! :(' });
+        spinnies.fail('execute-create-react-app', { text: 'create-react-app failed! :( Aborting...' });
         process.exit(1);
     }
 }
