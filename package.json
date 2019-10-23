@@ -1,5 +1,5 @@
 {
-  "name": "create-nrd-app",
+  "name": "@brito/create-nrd-app",
   "version": "0.1.0",
   "description": "CLI that generates node-react-docker app",
   "homepage": "https://github.com/EduSantosBrito/create-nrd-app#readme",
