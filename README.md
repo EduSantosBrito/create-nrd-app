@@ -73,7 +73,6 @@ my-app
 ├── server
 │   ├── .gitignore
 │   ├── .dockerignore
-│   ├── .gitignore
 │   ├── node_modules
 │   ├── package.json
 │   ├── tsconfig.json
