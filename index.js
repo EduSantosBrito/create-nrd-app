@@ -7,6 +7,7 @@ const figlet = require('figlet');
 const Spinnies = require('spinnies');
 const fs = require('fs');
 const spawnAsync = require('@expo/spawn-async');
+const jsonToYaml = require('json-to-pretty-yaml');
 const packageJSON = require('./package.json');
 const {
     getDockerComposeJson,
@@ -20,6 +21,8 @@ const {
     getGitignore,
     getClientProdDockerfile,
     getClientDevDockerfile,
+    getPrettierConfig,
+    getEslintConfig
 } = require('./functions');
 
 program.version(packageJSON.version);
@@ -60,66 +63,76 @@ async function generateFolder(folderPath) {
 }
 
 async function generatePackageJson(projectName) {
-    return inquirer.prompt([
-        {
-            name: 'name',
-            message: 'What is the project name?',
-            default: projectName,
-        },
-        {
-            name: 'version',
-            message: 'What is the project version?',
-            default: '0.1.0',
-        },
-        {
-            name: 'description',
-            message: `Describe your project here ${chalk.yellow('(optional)')}:`,
-            default: null,
-        },
-        {
-            name: 'author',
-            message: `What is the project author? ${chalk.yellow('(optional)')}`,
-            default: null,
-        },
-        {
-            name: 'license',
-            message: 'What is the project license?',
-            default: 'ISC',
-        },
-    ]).then((values) => {
-        spinnies.add('create-package-json', { text: 'Creating package.json' });
-        fs.writeFile(`${process.cwd()}/${projectName}/package.json`, JSON.stringify(values, null, 2), (err) => {
-            if (err) {
-                throw err;
-            }
-            spinnies.succeed('create-package-json', { text: 'package.json created!' });
+    return inquirer
+        .prompt([
+            {
+                name: 'name',
+                message: 'What is the project name?',
+                default: projectName,
+            },
+            {
+                name: 'version',
+                message: 'What is the project version?',
+                default: '0.1.0',
+            },
+            {
+                name: 'description',
+                message: `Describe your project here ${chalk.yellow('(optional)')}:`,
+                default: null,
+            },
+            {
+                name: 'author',
+                message: `What is the project author? ${chalk.yellow('(optional)')}`,
+                default: null,
+            },
+            {
+                name: 'license',
+                message: 'What is the project license?',
+                default: 'ISC',
+            },
+        ])
+        .then((values) => {
+            spinnies.add('create-package-json', { text: 'Creating package.json' });
+            fs.writeFile(`${process.cwd()}/${projectName}/package.json`, JSON.stringify(values, null, 2), (err) => {
+                if (err) {
+                    throw err;
+                }
+                spinnies.succeed('create-package-json', { text: 'package.json created!' });
+            });
         });
-    });
 }
 
 async function generateDockerComposeProdJson(projectName) {
     spinnies.add('create-prod-docker', { text: 'Creating docker-compose.json' });
-    return fs.writeFile(`${process.cwd()}/${projectName}/docker-compose.json`, JSON.stringify(getDockerComposeJson(projectName, 'production'), null, 2), (err) => {
-        if (err) {
-            throw err;
-        }
-        spinnies.succeed('create-prod-docker', { text: 'docker-compose.json created!' });
-    });
+    return fs.writeFile(
+        `${process.cwd()}/${projectName}/docker-compose.yml`,
+        jsonToYaml.stringify(JSON.stringify(getDockerComposeJson(projectName, 'production'), null, 2)),
+        (err) => {
+            if (err) {
+                throw err;
+            }
+            spinnies.succeed('create-prod-docker', { text: 'docker-compose.json created!' });
+        },
+    );
 }
 
 async function generateDockerComposeDevJson(projectName) {
     spinnies.add('create-dev-docker', { text: 'Creating docker-compose.dev.json' });
-    return fs.writeFile(`${process.cwd()}/${projectName}/docker-compose.dev.json`, JSON.stringify(getDockerComposeJson(projectName, 'development'), null, 2), (err) => {
-        if (err) {
-            throw err;
-        }
-        spinnies.succeed('create-dev-docker', { text: 'docker-compose.dev.json created!' });
-    });
+    return fs.writeFile(
+        `${process.cwd()}/${projectName}/docker-compose.dev.yml`,
+        jsonToYaml.stringify(JSON.stringify(getDockerComposeJson(projectName, 'development'), null, 2)),
+        (err) => {
+            if (err) {
+                throw err;
+            }
+            spinnies.succeed('create-dev-docker', { text: 'docker-compose.dev.json created!' });
+        },
+    );
 }
 
 async function generateTsConfigJson(projectName) {
     spinnies.add('create-ts-config', { text: 'Creating server/tsconfig.json' });
-    return fs.writeFile(`${process.cwd()}/${projectName}/server/tsconfig.json`, JSON.stringify(getTsConfig(), null, 2), (err) => {
+    await fs.writeFileSync(`${process.cwd()}/${projectName}/server/tsconfig.json`, JSON.stringify(getTsConfig(), null, 2), (err) => {
         if (err) {
             throw err;
         }
@@ -127,19 +140,43 @@ async function generateTsConfigJson(projectName) {
     });
 }
 
-async function generateServerPackageJson(projectName) {
-    spinnies.add('create-server-package-json', { text: 'Creating server/package.json' });
-    return fs.writeFile(`${process.cwd()}/${projectName}/server/package.json`, JSON.stringify(getServerPackageJson(projectName), null, 2), async (err) => {
-        if (err) {
+async function generatePrettierConfig() {
+    spinnies.add('create-prettier-config', {text: 'Creating server/.prettierrc'});
+    await fs.writeFileSync(`${process.cwd()}/${projectName}/server/.prettierrc`, JSON.stringify(getPrettierConfig(), null, 2), (err) => {
+        if(err) {
             throw err;
         }
-        spinnies.succeed('create-server-package-json', { text: 'server/package.json created!' });
-    });
+        spinnies.succeed('create-prettier-config', { text: 'server/.prettierrc created!' });
+    })
+}
+
+async function generateEslintConfig() {
+    spinnies.add('create-eslint-config', {text: 'Creating server/.eslintrc.json'});
+    await fs.writeFileSync(`${process.cwd()}/${projectName}/server/.eslintrc.json`, JSON.stringify(getEslintConfig(), null, 2), (err) => {
+        if(err) {
+            throw err;
+        }
+        spinnies.succeed('create-eslint-config', { text: 'server/.eslintrc.json created!' });
+    })
+}
+
+async function generateServerPackageJson(projectName) {
+    spinnies.add('create-server-package-json', { text: 'Creating server/package.json' });
+    await fs.writeFileSync(
+        `${process.cwd()}/${projectName}/server/package.json`,
+        JSON.stringify(getServerPackageJson(projectName), null, 2),
+        async (err) => {
+            if (err) {
+                throw err;
+            }
+            spinnies.succeed('create-server-package-json', { text: 'server/package.json created!' });
+        },
+    );
 }
 
 async function generateServerIndex(projectName) {
     spinnies.add('create-index-server', { text: 'Creating server/index.ts' });
-    await fs.writeFile(`${process.cwd()}/${projectName}/server/src/index.ts`, getServerIndexExpress(), (err) => {
+    fs.writeFile(`${process.cwd()}/${projectName}/server/src/index.ts`, getServerIndexExpress(), (err) => {
         if (err) {
             throw err;
         }
@@ -149,7 +186,7 @@ async function generateServerIndex(projectName) {
 
 async function generateServerProdDockerfile(projectName) {
     spinnies.add('create-server-prod-dockerfile', { text: 'Creating server/Dockerfile' });
-    await fs.writeFile(`${process.cwd()}/${projectName}/server/Dockerfile`, getServerProdDockerfile(), (err) => {
+    fs.writeFile(`${process.cwd()}/${projectName}/server/Dockerfile`, getServerProdDockerfile(), (err) => {
         if (err) {
             throw err;
         }
@@ -159,7 +196,7 @@ async function generateServerProdDockerfile(projectName) {
 
 async function generateServerDevDockerfile(projectName) {
     spinnies.add('create-server-dev-dockerfile', { text: 'Creating server/dev.Dockerfile' });
-    await fs.writeFile(`${process.cwd()}/${projectName}/server/dev.Dockerfile`, getServerDevDockerfile(), (err) => {
+    fs.writeFile(`${process.cwd()}/${projectName}/server/dev.Dockerfile`, getServerDevDockerfile(), (err) => {
         if (err) {
             throw err;
         }
@@ -169,7 +206,7 @@ async function generateServerDevDockerfile(projectName) {
 
 async function generateClientProdDockerfile(projectName) {
     spinnies.add('create-client-prod-dockerfile', { text: 'Creating client/Dockerfile' });
-    await fs.writeFile(`${process.cwd()}/${projectName}/client/Dockerfile`, getClientProdDockerfile(), (err) => {
+    fs.writeFile(`${process.cwd()}/${projectName}/client/Dockerfile`, getClientProdDockerfile(), (err) => {
         if (err) {
             throw err;
         }
@@ -179,7 +216,7 @@ async function generateClientProdDockerfile(projectName) {
 
 async function generateClientDevDockerfile(projectName) {
     spinnies.add('create-client-dev-dockerfile', { text: 'Creating client/dev.Dockerfile' });
-    await fs.writeFile(`${process.cwd()}/${projectName}/client/dev.Dockerfile`, getClientDevDockerfile(), (err) => {
+    await fs.writeFileSync(`${process.cwd()}/${projectName}/client/dev.Dockerfile`, getClientDevDockerfile(), (err) => {
         if (err) {
             throw err;
         }
@@ -187,10 +224,9 @@ async function generateClientDevDockerfile(projectName) {
     });
 }
 
-
 async function generateDockerIgnore(folderPath) {
     spinnies.add(`create-${folderPath}-dockerignore`, { text: `Creating ${folderPath}` });
-    await fs.writeFile(`${process.cwd()}/${folderPath}`, getDockerignore(), (err) => {
+    await fs.writeFileSync(`${process.cwd()}/${folderPath}`, getDockerignore(), (err) => {
         if (err) {
             throw err;
         }
@@ -200,7 +236,7 @@ async function generateDockerIgnore(folderPath) {
 
 async function generateGitignore(folderPath) {
     spinnies.add(`create-${folderPath}-gitignore`, { text: `Creating ${folderPath}` });
-    await fs.writeFile(`${process.cwd()}/${folderPath}`, getGitignore(), (err) => {
+    await fs.writeFileSync(`${process.cwd()}/${folderPath}`, getGitignore(), (err) => {
         if (err) {
             throw err;
         }
@@ -216,7 +252,7 @@ async function installServerPackages(projectName, isNpm) {
 
 async function generateNginxConfigFile(projectName) {
     spinnies.add('create-client-nginx-config-file', { text: 'Creating client/conf/conf.d/default.conf' });
-    await fs.writeFile(`${process.cwd()}/${projectName}/client/conf/conf.d/default.conf`, getNginxConfigFile(projectName), (err) => {
+    await fs.writeFileSync(`${process.cwd()}/${projectName}/client/conf/conf.d/default.conf`, getNginxConfigFile(projectName), (err) => {
         if (err) {
             throw err;
         }
@@ -224,11 +260,15 @@ async function generateNginxConfigFile(projectName) {
     });
 }
 
-
 async function executeCreateReactApp(projectName, isNpm) {
-    spinnies.add('execute-create-react-app', { text: `Executing create-react-app with ${chalk.yellow(isNpm ? 'npx create-react-app' : 'yarn create react-app')}` });
+    spinnies.add('execute-create-react-app', {
+        text: `Executing create-react-app with ${chalk.yellow(isNpm ? 'npx create-react-app' : 'yarn create react-app')}`,
+    });
     try {
-        await spawnAsync(`cd ./${projectName} && ${isNpm ? 'npm init react-app client --use-npm' : 'yarn create react-app client'} && cd ..`, { shell: true });
+        await spawnAsync(
+            `cd ./${projectName} && ${isNpm ? 'npm init react-app client --use-npm' : 'yarn create react-app client'} && cd ..`,
+            { shell: true },
+        );
         spinnies.succeed('execute-create-react-app', { text: 'create-react-app finished!' });
     } catch (error) {
         spinnies.fail('execute-create-react-app', { text: 'create-react-app failed! :( Aborting...' });
@@ -251,6 +291,8 @@ program
         await generateTsConfigJson(projectName);
         await generateServerPackageJson(projectName);
         await generateServerIndex(projectName);
+        await generateEslintConfig();
+        await generatePrettierConfig();
         await generateDockerIgnore(`${projectName}/server/.dockerignore`);
         await generateGitignore(`${projectName}/server/.gitignore`);
         await generateServerDevDockerfile(projectName);
