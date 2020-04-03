@@ -140,7 +140,7 @@ async function generateTsConfigJson(projectName) {
     });
 }
 
-async function generatePrettierConfig() {
+async function generatePrettierConfig(projectName) {
     spinnies.add('create-prettier-config', {text: 'Creating server/.prettierrc'});
     await fs.writeFileSync(`${process.cwd()}/${projectName}/server/.prettierrc`, JSON.stringify(getPrettierConfig(), null, 2), (err) => {
         if(err) {
@@ -150,7 +150,7 @@ async function generatePrettierConfig() {
     })
 }
 
-async function generateEslintConfig() {
+async function generateEslintConfig(projectName) {
     spinnies.add('create-eslint-config', {text: 'Creating server/.eslintrc.json'});
     await fs.writeFileSync(`${process.cwd()}/${projectName}/server/.eslintrc.json`, JSON.stringify(getEslintConfig(), null, 2), (err) => {
         if(err) {
@@ -291,8 +291,8 @@ program
         await generateTsConfigJson(projectName);
         await generateServerPackageJson(projectName);
         await generateServerIndex(projectName);
-        await generateEslintConfig();
-        await generatePrettierConfig();
+        await generateEslintConfig(projectName);
+        await generatePrettierConfig(projectName);
         await generateDockerIgnore(`${projectName}/server/.dockerignore`);
         await generateGitignore(`${projectName}/server/.gitignore`);
         await generateServerDevDockerfile(projectName);
