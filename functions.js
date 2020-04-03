@@ -105,6 +105,7 @@ function getServerPackageJson(projectName) {
             '@types/compression': '^1.7.0',
             '@types/express': '^4.17.3',
             '@types/jest': '^25.1.4',
+            '@types/cors': '^2.8.6',
             '@types/node': '^13.9.1',
             '@types/supertest': '^2.0.8',
             '@typescript-eslint/eslint-plugin': '^2.19.0',
@@ -127,20 +128,36 @@ function getServerPackageJson(projectName) {
     };
 }
 
+function getGlobalSetupJest() {
+    return `const app = require('./dist/server').default;
+
+    module.exports = async () => {
+        global.__EXPRESS_SERVER__ = app;
+    };`;
+}
+
+function getGlobalTeardownJest() {
+    return `module.exports = async () => {
+        await global.__EXPRESS_SERVER__.close();
+    };`;
+}
+
 function getServerIndexExpress() {
     return `
 import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
+import compression from 'compression';
 import cors from 'cors';
 
 const app = express();
 
+app.use(compression());
 app.use(cors());
 app.use(bodyParser.json());
 
 app.get('/', (req: Request, res: Response) => res.send('Hello World'));
 
-app.listen(process.env.NODE_PORT || 3000);
+export default app.listen(process.env.NODE_PORT || 3000);
 `;
 }
 
@@ -347,5 +364,7 @@ module.exports = {
     getClientDevDockerfile,
     getClientProdDockerfile,
     getPrettierConfig,
+    getGlobalTeardownJest,
+    getGlobalSetupJest,
     getEslintConfig,
 };

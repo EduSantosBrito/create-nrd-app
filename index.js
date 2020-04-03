@@ -23,6 +23,8 @@ const {
     getClientDevDockerfile,
     getPrettierConfig,
     getEslintConfig,
+    getGlobalTeardownJest,
+    getGlobalSetupJest,
 } = require('./functions');
 
 program.version(packageJSON.version);
@@ -108,7 +110,7 @@ async function generateDockerComposeProdJson(projectName) {
         `${process.cwd()}/${projectName}/docker-compose.yml`,
         jsonToYaml.stringify(getDockerComposeJson(projectName, 'production')),
     );
-    spinnies.succeed('create-prod-docker', { text: 'docker-compose.json created!' });
+    spinnies.succeed('create-prod-docker', { text: 'docker-compose.yml created!' });
 }
 
 async function generateDockerComposeDevJson(projectName) {
@@ -117,13 +119,25 @@ async function generateDockerComposeDevJson(projectName) {
         `${process.cwd()}/${projectName}/docker-compose.dev.yml`,
         jsonToYaml.stringify(getDockerComposeJson(projectName, 'development')),
     );
-    spinnies.succeed('create-dev-docker', { text: 'docker-compose.dev.json created!' });
+    spinnies.succeed('create-dev-docker', { text: 'docker-compose.dev.yml created!' });
 }
 
 async function generateTsConfigJson(projectName) {
     spinnies.add('create-ts-config', { text: 'Creating server/tsconfig.json' });
     await fs.promises.writeFile(`${process.cwd()}/${projectName}/server/tsconfig.json`, JSON.stringify(getTsConfig(), null, 2));
     spinnies.succeed('create-ts-config', { text: 'server/tsconfig.json created!' });
+}
+
+async function generateGlobalSetupJest(projectName) {
+    spinnies.add('create-setup-jest-config', { text: 'Creating server/global.setup.js' });
+    await fs.promises.writeFile(`${process.cwd()}/${projectName}/server/global.setup.js`, getGlobalSetupJest());
+    spinnies.succeed('create-setup-jest-config', { text: 'server/global.setup.js created!' });
+}
+
+async function generateGlobalTeardownJest(projectName) {
+    spinnies.add('create-teardown-jest-config', { text: 'Creating server/global.teardown.js' });
+    await fs.promises.writeFile(`${process.cwd()}/${projectName}/server/global.teardown.js`, getGlobalTeardownJest());
+    spinnies.succeed('create-teardown-jest-config', { text: 'server/global.teardown.js created!' });
 }
 
 async function generatePrettierConfig(projectName) {
@@ -148,9 +162,9 @@ async function generateServerPackageJson(projectName) {
 }
 
 async function generateServerIndex(projectName) {
-    spinnies.add('create-index-server', { text: 'Creating server/index.ts' });
-    await fs.promises.writeFile(`${process.cwd()}/${projectName}/server/src/index.ts`, getServerIndexExpress());
-    spinnies.succeed('create-index-server', { text: 'server/src/index.ts created!' });
+    spinnies.add('create-index-server', { text: 'Creating server/src/server.ts' });
+    await fs.promises.writeFile(`${process.cwd()}/${projectName}/server/src/server.ts`, getServerIndexExpress());
+    spinnies.succeed('create-index-server', { text: 'server/src/server.ts created!' });
 }
 
 async function generateServerProdDockerfile(projectName) {
@@ -234,6 +248,8 @@ program
         await generateServerIndex(projectName);
         await generateEslintConfig(projectName);
         await generatePrettierConfig(projectName);
+        await generateGlobalSetupJest(projectName);
+        await generateGlobalTeardownJest(projectName);
         await generateDockerIgnore(`${projectName}/server/.dockerignore`);
         await generateGitignore(`${projectName}/server/.gitignore`);
         await generateServerDevDockerfile(projectName);

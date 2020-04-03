@@ -79,6 +79,7 @@ my-app
 │   ├── tsconfig.json
 │   ├── dev.Dockerfile
 │   ├── Dockerfile
+│   ├── server.ts
 └── client
     ├── conf
     │   └── conf.d
