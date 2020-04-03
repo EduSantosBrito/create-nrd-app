@@ -131,15 +131,15 @@ function getServerPackageJson(projectName) {
 function getGlobalSetupJest() {
     return `const app = require('./dist/server').default;
 
-    module.exports = async () => {
-        global.__EXPRESS_SERVER__ = app;
-    };`;
+module.exports = async () => {
+    global.__EXPRESS_SERVER__ = app;
+};`;
 }
 
 function getGlobalTeardownJest() {
     return `module.exports = async () => {
-        await global.__EXPRESS_SERVER__.close();
-    };`;
+    await global.__EXPRESS_SERVER__.close();
+};`;
 }
 
 function getServerIndexExpress() {
@@ -164,19 +164,19 @@ export default app.listen(process.env.NODE_PORT || 3000);
 function getServerProdDockerfile() {
     return `FROM node:13.12-slim
 
-    WORKDIR /usr/src/app
+WORKDIR /usr/src/app
 
-    COPY . .
-    
-    RUN yarn add -D typescript
-    
-    RUN yarn build
-    
-    RUN yarn --network-timeout 1000000
-    
-    EXPOSE 3000
-    
-    CMD [ "yarn", "start" ]`;
+COPY . .
+
+RUN yarn add -D typescript
+
+RUN yarn build
+
+RUN yarn --network-timeout 1000000
+
+EXPOSE 3000
+
+CMD [ "yarn", "start" ]`;
 }
 
 function getServerDevDockerfile() {
@@ -267,15 +267,15 @@ CMD ["nginx", "-g", "daemon off;"]`;
 function getClientDevDockerfile() {
     return `FROM node:13.12-slim
 
-            WORKDIR /usr/src/app
+WORKDIR /usr/src/app
 
-            COPY . .
-            
-            RUN yarn --network-timeout 1000000
-            
-            EXPOSE 3000
-            
-            CMD ["yarn", "start"]`;
+COPY . .
+
+RUN yarn --network-timeout 1000000
+
+EXPOSE 3000
+
+CMD ["yarn", "start"]`;
 }
 
 function getPrettierConfig() {
