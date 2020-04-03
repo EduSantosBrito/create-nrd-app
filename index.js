@@ -91,9 +91,9 @@ async function generatePackageJson(projectName) {
                 default: 'ISC',
             },
         ])
-        .then((values) => {
+        .then(async (values) => {
             spinnies.add('create-package-json', { text: 'Creating package.json' });
-            fs.writeFile(`${process.cwd()}/${projectName}/package.json`, JSON.stringify(values, null, 2), (err) => {
+            await fs.promises.writeFile(`${process.cwd()}/${projectName}/package.json`, JSON.stringify(values, null, 2), (err) => {
                 if (err) {
                     throw err;
                 }
@@ -104,7 +104,7 @@ async function generatePackageJson(projectName) {
 
 async function generateDockerComposeProdJson(projectName) {
     spinnies.add('create-prod-docker', { text: 'Creating docker-compose.json' });
-    return fs.writeFile(
+    await fs.promises.writeFile(
         `${process.cwd()}/${projectName}/docker-compose.yml`,
         jsonToYaml.stringify(JSON.stringify(getDockerComposeJson(projectName, 'production'), null, 2)),
         (err) => {
@@ -118,7 +118,7 @@ async function generateDockerComposeProdJson(projectName) {
 
 async function generateDockerComposeDevJson(projectName) {
     spinnies.add('create-dev-docker', { text: 'Creating docker-compose.dev.json' });
-    return fs.writeFile(
+    await fs.promises.writeFile(
         `${process.cwd()}/${projectName}/docker-compose.dev.yml`,
         jsonToYaml.stringify(JSON.stringify(getDockerComposeJson(projectName, 'development'), null, 2)),
         (err) => {
@@ -132,7 +132,7 @@ async function generateDockerComposeDevJson(projectName) {
 
 async function generateTsConfigJson(projectName) {
     spinnies.add('create-ts-config', { text: 'Creating server/tsconfig.json' });
-    await fs.writeFileSync(`${process.cwd()}/${projectName}/server/tsconfig.json`, JSON.stringify(getTsConfig(), null, 2), (err) => {
+    await fs.promises.writeFile(`${process.cwd()}/${projectName}/server/tsconfig.json`, JSON.stringify(getTsConfig(), null, 2), (err) => {
         if (err) {
             throw err;
         }
@@ -142,7 +142,7 @@ async function generateTsConfigJson(projectName) {
 
 async function generatePrettierConfig(projectName) {
     spinnies.add('create-prettier-config', {text: 'Creating server/.prettierrc'});
-    await fs.writeFileSync(`${process.cwd()}/${projectName}/server/.prettierrc`, JSON.stringify(getPrettierConfig(), null, 2), (err) => {
+    await fs.promises.writeFile(`${process.cwd()}/${projectName}/server/.prettierrc`, JSON.stringify(getPrettierConfig(), null, 2), (err) => {
         if(err) {
             throw err;
         }
@@ -152,7 +152,7 @@ async function generatePrettierConfig(projectName) {
 
 async function generateEslintConfig(projectName) {
     spinnies.add('create-eslint-config', {text: 'Creating server/.eslintrc.json'});
-    await fs.writeFileSync(`${process.cwd()}/${projectName}/server/.eslintrc.json`, JSON.stringify(getEslintConfig(), null, 2), (err) => {
+    await fs.promises.writeFile(`${process.cwd()}/${projectName}/server/.eslintrc.json`, JSON.stringify(getEslintConfig(), null, 2), (err) => {
         if(err) {
             throw err;
         }
@@ -162,7 +162,7 @@ async function generateEslintConfig(projectName) {
 
 async function generateServerPackageJson(projectName) {
     spinnies.add('create-server-package-json', { text: 'Creating server/package.json' });
-    await fs.writeFileSync(
+    await fs.promises.writeFile(
         `${process.cwd()}/${projectName}/server/package.json`,
         JSON.stringify(getServerPackageJson(projectName), null, 2),
         async (err) => {
@@ -176,7 +176,7 @@ async function generateServerPackageJson(projectName) {
 
 async function generateServerIndex(projectName) {
     spinnies.add('create-index-server', { text: 'Creating server/index.ts' });
-    fs.writeFile(`${process.cwd()}/${projectName}/server/src/index.ts`, getServerIndexExpress(), (err) => {
+    await fs.promises.writeFile(`${process.cwd()}/${projectName}/server/src/index.ts`, getServerIndexExpress(), (err) => {
         if (err) {
             throw err;
         }
@@ -186,7 +186,7 @@ async function generateServerIndex(projectName) {
 
 async function generateServerProdDockerfile(projectName) {
     spinnies.add('create-server-prod-dockerfile', { text: 'Creating server/Dockerfile' });
-    fs.writeFile(`${process.cwd()}/${projectName}/server/Dockerfile`, getServerProdDockerfile(), (err) => {
+    await fs.promises.writeFile(`${process.cwd()}/${projectName}/server/Dockerfile`, getServerProdDockerfile(), (err) => {
         if (err) {
             throw err;
         }
@@ -196,7 +196,7 @@ async function generateServerProdDockerfile(projectName) {
 
 async function generateServerDevDockerfile(projectName) {
     spinnies.add('create-server-dev-dockerfile', { text: 'Creating server/dev.Dockerfile' });
-    fs.writeFile(`${process.cwd()}/${projectName}/server/dev.Dockerfile`, getServerDevDockerfile(), (err) => {
+    await fs.promises.writeFile(`${process.cwd()}/${projectName}/server/dev.Dockerfile`, getServerDevDockerfile(), (err) => {
         if (err) {
             throw err;
         }
@@ -206,7 +206,7 @@ async function generateServerDevDockerfile(projectName) {
 
 async function generateClientProdDockerfile(projectName) {
     spinnies.add('create-client-prod-dockerfile', { text: 'Creating client/Dockerfile' });
-    fs.writeFile(`${process.cwd()}/${projectName}/client/Dockerfile`, getClientProdDockerfile(), (err) => {
+    await fs.promises.writeFile(`${process.cwd()}/${projectName}/client/Dockerfile`, getClientProdDockerfile(), (err) => {
         if (err) {
             throw err;
         }
@@ -216,7 +216,7 @@ async function generateClientProdDockerfile(projectName) {
 
 async function generateClientDevDockerfile(projectName) {
     spinnies.add('create-client-dev-dockerfile', { text: 'Creating client/dev.Dockerfile' });
-    await fs.writeFileSync(`${process.cwd()}/${projectName}/client/dev.Dockerfile`, getClientDevDockerfile(), (err) => {
+    await fs.promises.writeFile(`${process.cwd()}/${projectName}/client/dev.Dockerfile`, getClientDevDockerfile(), (err) => {
         if (err) {
             throw err;
         }
@@ -226,7 +226,7 @@ async function generateClientDevDockerfile(projectName) {
 
 async function generateDockerIgnore(folderPath) {
     spinnies.add(`create-${folderPath}-dockerignore`, { text: `Creating ${folderPath}` });
-    await fs.writeFileSync(`${process.cwd()}/${folderPath}`, getDockerignore(), (err) => {
+    await fs.promises.writeFile(`${process.cwd()}/${folderPath}`, getDockerignore(), (err) => {
         if (err) {
             throw err;
         }
@@ -236,7 +236,7 @@ async function generateDockerIgnore(folderPath) {
 
 async function generateGitignore(folderPath) {
     spinnies.add(`create-${folderPath}-gitignore`, { text: `Creating ${folderPath}` });
-    await fs.writeFileSync(`${process.cwd()}/${folderPath}`, getGitignore(), (err) => {
+    await fs.promises.writeFile(`${process.cwd()}/${folderPath}`, getGitignore(), (err) => {
         if (err) {
             throw err;
         }
@@ -252,7 +252,7 @@ async function installServerPackages(projectName, isNpm) {
 
 async function generateNginxConfigFile(projectName) {
     spinnies.add('create-client-nginx-config-file', { text: 'Creating client/conf/conf.d/default.conf' });
-    await fs.writeFileSync(`${process.cwd()}/${projectName}/client/conf/conf.d/default.conf`, getNginxConfigFile(projectName), (err) => {
+    await fs.promises.writeFile(`${process.cwd()}/${projectName}/client/conf/conf.d/default.conf`, getNginxConfigFile(projectName), (err) => {
         if (err) {
             throw err;
         }
