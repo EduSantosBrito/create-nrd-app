@@ -15,15 +15,14 @@ If something doesn’t work, please [file an issue](https://github.com/EduSantos
 ```sh
 npx create-nrd-app my-app
 cd my-app
-docker-compose -f docker-compose.json up --build
+docker-compose -f docker-compose.yml up --build
 ```
 
 _([npx](https://medium.com/@maybekatz/introducing-npx-an-npm-package-runner-55f7d4bd282b) comes with npm 5.2+ and higher)_
 
 Then open:<br>
-[http://localhost:50100/](http://localhost:50100/) to see your app.<br>
-[http://localhost:50110/](http://localhost:50110/) to see your server.<br>
-[http://localhost:50120/](http://localhost:50120/) to see your database.<br>
+[http://localhost:3000/](http://localhost:3000/) to see your app.<br>
+[http://localhost:3001/](http://localhost:3001/) to see your server.<br>
 
 ### Get Started Immediately
 
@@ -67,12 +66,14 @@ Inside that directory, it will generate the initial project structure and instal
 
 ```
 my-app
-├── docker-compose.dev.json
-├── docker-compose.json
+├── docker-compose.dev.yml
+├── docker-compose.yml
 ├── package.json
 ├── server
 │   ├── .gitignore
 │   ├── .dockerignore
+│   ├── .prettierrc
+│   ├── .eslintrc.json
 │   ├── node_modules
 │   ├── package.json
 │   ├── tsconfig.json
@@ -111,23 +112,19 @@ cd my-app
 
 Inside the newly created project, you can run some built-in commands:
 
-### `docker-compose -f docker-compose.dev.json up --build`
+### `docker-compose -f docker-compose.dev.yml up --build`
 
 Runs the app in development mode.<br>
-Open [http://localhost:50200](http://localhost:50200) to view your app it in the browser.<br>
-Open [http://localhost:50210](http://localhost:50210) to view your server it in the browser.<br>
-Open [http://localhost:50220](http://localhost:50220) to view your database it in the browser.
+Open [http://localhost:3000](http://localhost:3000) to view your app it in the browser.<br>
+Open [http://localhost:3001](http://localhost:3001) to view your server it in the browser.<br>
 
 The page will automatically reload if you make changes to the code.<br>
 
-### `docker-compose -f docker-compose.dev.json up --build`
+### `docker-compose -f docker-compose.yml up --build`
 
 Runs the app in production mode.<br>
-
-Runs the app in development mode.<br>
-Open [http://localhost:50100](http://localhost:50100) to view your app it in the browser.<br>
-Open [http://localhost:50110](http://localhost:50110) to view your server it in the browser.<br>
-Open [http://localhost:50120](http://localhost:50120) to view your database it in the browser.
+Open [http://localhost:3000](http://localhost:3000) to view your app it in the browser.<br>
+Open [http://localhost:3001](http://localhost:3001) to view your server it in the browser.<br>
 
 ## License
 
