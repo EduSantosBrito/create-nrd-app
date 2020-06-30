@@ -1,42 +1,56 @@
 {
-  "name": "create-nrd-app",
-  "version": "2.1.0",
-  "description": "CLI that generates node-react-docker app",
-  "homepage": "https://github.com/EduSantosBrito/create-nrd-app#readme",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/EduSantosBrito/create-nrd-app.git"
-  },
-  "private": false,
-  "bugs": {
-    "url": "https://github.com/EduSantosBrito/create-nrd-app/issues"
-  },
-  "license": "MIT",
-  "bin": {
-    "create-nrd-app": "index.js"
-  },
-  "author": {
-    "name": "Eduardo Santos de Brito",
-    "email": "edu.santos.brito@gmail.com",
-    "url": "https://github.com/EduSantosBrito/"
-  },
-  "scripts": {
-    "prepublishOnly": "rm -rf node_modules && rm -rf yarn.lock && yarn install"
-  },
-  "dependencies": {
-    "@expo/spawn-async": "^1.5.0",
-    "chalk": "^4.0.0",
-    "commander": "^5.0.0",
-    "figlet": "^1.3.0",
-    "inquirer": "^7.1.0",
-    "json-to-pretty-yaml": "^1.2.2",
-    "shelljs": "^0.8.3",
-    "spinnies": "^0.5.1"
-  },
-  "devDependencies": {
-    "eslint": "^6.8.0",
-    "eslint-config-airbnb-base": "^14.1.0",
-    "eslint-plugin-import": "^2.20.2",
-    "prettier": "^2.0.2"
-  }
+    "name": "create-nrd-app",
+    "version": "3.0.0",
+    "description": "CLI that generates node-react-docker app",
+    "homepage": "https://github.com/EduSantosBrito/create-nrd-app#readme",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/EduSantosBrito/create-nrd-app.git"
+    },
+    "private": false,
+    "bugs": {
+        "url": "https://github.com/EduSantosBrito/create-nrd-app/issues"
+    },
+    "license": "MIT",
+    "author": {
+        "name": "Eduardo Santos de Brito",
+        "email": "edu.santos.brito@gmail.com",
+        "url": "https://github.com/EduSantosBrito/"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "lint-staged"
+        }
+    },
+    "lint-staged": {
+        "*.{js,jsx}": "eslint --ext .ts ./"
+    },
+    "scripts": {
+        "prepublishOnly": "rm -rf node_modules && rm -rf yarn.lock && yarn install --production"
+    },
+    "dependencies": {
+        "@expo/spawn-async": "^1.5.0",
+        "chalk": "^4.0.0",
+        "commander": "^5.0.0",
+        "figlet": "^1.3.0",
+        "inquirer": "^7.1.0",
+        "json-to-pretty-yaml": "^1.2.2",
+        "shelljs": "^0.8.3",
+        "spinnies": "^0.5.1"
+    },
+    "devDependencies": {
+        "@types/node": "^14.0.14",
+        "@typescript-eslint/eslint-plugin": "^3.5.0",
+        "@typescript-eslint/parser": "^3.5.0",
+        "eslint": "^7.3.1",
+        "eslint-config-airbnb-base": "^14.1.0",
+        "eslint-config-airbnb-typescript": "^8.0.2",
+        "eslint-config-prettier": "^6.11.0",
+        "eslint-plugin-import": "^2.22.0",
+        "eslint-plugin-prettier": "^3.1.4",
+        "husky": "^4.2.5",
+        "lint-staged": "^10.2.11",
+        "prettier": "^2.0.5",
+        "typescript": "^3.9.5"
+    }
 }
