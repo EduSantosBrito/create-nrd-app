@@ -3,6 +3,7 @@
     "version": "3.0.0",
     "description": "CLI that generates node-react-docker app",
     "homepage": "https://github.com/EduSantosBrito/create-nrd-app#readme",
+    "type": "module",
     "repository": {
         "type": "git",
         "url": "git://github.com/EduSantosBrito/create-nrd-app.git"
@@ -26,19 +27,16 @@
         "*.{js,jsx}": "eslint --ext .ts ./"
     },
     "scripts": {
-        "prepublishOnly": "rm -rf node_modules && rm -rf yarn.lock && yarn install --production"
+        "prepublishOnly": "rm -rf node_modules && rm -rf yarn.lock && yarn install --production",
+        "build": "rm -rf lib && tsc",
+        "postbuild": "cp package.json lib/package.json && cd lib && yarn install --production",
+        "start": "node ./lib/index.js"
     },
     "dependencies": {
-        "@expo/spawn-async": "^1.5.0",
-        "chalk": "^4.0.0",
-        "commander": "^5.0.0",
-        "figlet": "^1.3.0",
-        "inquirer": "^7.1.0",
-        "json-to-pretty-yaml": "^1.2.2",
-        "shelljs": "^0.8.3",
-        "spinnies": "^0.5.1"
+        "node-fetch": "^2.6.0"
     },
     "devDependencies": {
+        "@types/node-fetch": "^2.5.7",
         "@types/node": "^14.0.14",
         "@typescript-eslint/eslint-plugin": "^3.5.0",
         "@typescript-eslint/parser": "^3.5.0",
