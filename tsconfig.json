@@ -4,8 +4,6 @@
         "module": "ESNext" /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', 'es2020', or 'ESNext'. */,
         "allowJs": false /* Allow javascript files to be compiled. */,
         "declaration": true /* Generates corresponding '.d.ts' file. */,
-        "declarationMap": true /* Generates a sourcemap for each corresponding '.d.ts' file. */,
-        "sourceMap": true /* Generates corresponding '.map' file. */,
         "outDir": "./lib" /* Redirect output structure to the directory. */,
         "rootDir": "./" /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */,
         "baseUrl": "./" /* Base directory to resolve non-absolute module names. */,
