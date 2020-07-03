@@ -42,7 +42,12 @@ const serverPackages: RequiredPackages = {
 function getLastPackageVersions(versions: PackageVersion[]): string[] {
     return Object.keys(versions)
         .filter((version) => /^([0-9]+)\.([0-9]+)\.([0-9]+)$/.test(version))
-        .sort((a, b) => (lt(a, b) ? 1 : -1))
+        .sort((a, b) => {
+            if (a === b) {
+                return 0;
+            }
+            return lt(a, b) ? 1 : -1;
+        })
         .slice(0, 20);
 }
 
