@@ -1,0 +1,5 @@
+const app = require('./dist/server').default;
+
+module.exports = async () => {
+    global.__EXPRESS_SERVER__ = app;
+};

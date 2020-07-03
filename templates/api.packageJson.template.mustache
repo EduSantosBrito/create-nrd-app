@@ -1,0 +1,32 @@
+{
+    "name": "{{ projectName }}-server",
+    "version": "0.1.0",
+    "main": "dist/server.js",
+    "license": "MIT",
+    "husky": {
+        "hooks": {
+            "pre-commit": "tsc && lint-staged && yarn test"
+        }
+    },
+    "lint-staged": {
+        "*.{js,ts}": ["eslint --fix"]
+    },
+    "jest": {
+        "testEnvironment": "node",
+        "coveragePathIgnorePatterns": ["./node_modules/", "./dist"],
+        "collectCoverageFrom": ["src/**/*.{js,jsx,ts,tsx}"],
+        "globalSetup": "./global.setup.js",
+        "globalTeardown": "./global.teardown.js"
+    },
+    "scripts": {
+        "build:dev": "nodemon --watch 'dist/**/*'",
+        "watch": "tsc --watch",
+        "dev": "yarn run watch & yarn run build:dev",
+        "build": "tsc",
+        "lint": "tsc && eslint '*/**/*.{js,ts}' --quiet --fix",
+        "start": "node ./dist/server.js",
+        "test": "tsc && jest"
+    },
+    "dependencies": {{ dependencies }},
+    "devDependencies": {{ devDependencies }}
+}
