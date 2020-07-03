@@ -7,9 +7,6 @@
         "type": "git",
         "url": "git://github.com/EduSantosBrito/create-nrd-app.git"
     },
-    "files": [
-        "lib/**/*"
-    ],
     "private": false,
     "bugs": {
         "url": "https://github.com/EduSantosBrito/create-nrd-app/issues"
