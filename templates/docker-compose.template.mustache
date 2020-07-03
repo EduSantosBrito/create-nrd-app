@@ -1,0 +1,41 @@
+{
+    "version": "3",
+    "services": {
+        "{{ projectName }}-{{ environment }}-client": {
+            "build": {
+                "context": "./client",
+                "dockerfile": "{{ dockerfile }}"
+            },
+            "restart": "always",
+            "environment": {
+                "NODE_ENV": "{{ environment }}",
+                "REACT_APP_PORT": "{{ appPort }}",
+                "REACT_APP_HOST": "0.0.0.0",
+                "REACT_APP_API_HOST": "0.0.0.0",
+                "REACT_APP_API_PORT": 3001
+            },
+            "ports": ["{{ appContainerPort }}"],
+            "depends_on": ["{{ projectName }}-{{ environment }}-server"],
+            "networks": ["{{ projectName }}-{{ environment }}-network"]
+        },
+        "{{ projectName }}-{{ environment }}-server": {
+            "build": {
+                "context": "./server",
+                "dockerfile": "{{ dockerfile }}"
+            },
+            "restart": "always",
+            "environment": {
+                "NODE_ENV": "{{ environment }}",
+                "NODE_PORT": 3001,
+                "NODE_HOST": "0.0.0.0"
+            },
+            "ports": ["3001:3001"],
+            "networks": ["{{ projectName }}-{{ environment }}-network"]
+        }
+    },
+    "networks": {
+        "{{ projectName }}-{{ environment }}-network": {
+            "driver": "bridge"
+        }
+    }
+}

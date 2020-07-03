@@ -1,0 +1,14 @@
+import express, { Request, Response } from 'express';
+import bodyParser from 'body-parser';
+import compression from 'compression';
+import cors from 'cors';
+
+const app = express();
+
+app.use(compression());
+app.use(cors());
+app.use(bodyParser.json());
+
+app.get('/', (req: Request, res: Response) => res.send('Hello World'));
+
+export default app.listen(process.env.NODE_PORT || 3000);
