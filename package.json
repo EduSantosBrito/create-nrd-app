@@ -7,6 +7,9 @@
         "type": "git",
         "url": "git://github.com/EduSantosBrito/create-nrd-app.git"
     },
+    "files": [
+        "lib/**/*"
+    ],
     "private": false,
     "bugs": {
         "url": "https://github.com/EduSantosBrito/create-nrd-app/issues"
@@ -29,7 +32,7 @@
         "@app": "./src"
     },
     "scripts": {
-        "prepublishOnly": "rm -rf node_modules && rm -rf yarn.lock && yarn install --production",
+        "prepublishOnly": "yarn build",
         "build": "tsc",
         "dev": "nodemon --ignore ./lib -e ts --exec yarn build",
         "postbuild": "cp package.json lib/package.json && cd lib && yarn install --production",
