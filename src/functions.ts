@@ -9,6 +9,7 @@ import { SpinnerOptions } from 'spinnies';
 import jsonToYaml from 'json-to-pretty-yaml';
 import { renderTemplateFile } from 'template-file';
 import latestVersion from 'latest-version';
+import spawnAsync from '@expo/spawn-async';
 
 const serverPackages: RequiredPackages = {
     dependencies: [{ name: 'body-parser' }, { name: 'cors' }, { name: 'express' }, { name: 'compression' }],
@@ -102,7 +103,7 @@ async function generatePackageJson(projectName: string): Promise<SpinnerOptions>
     return spinnies.succeed('create-package-json', { text: 'package.json created!' });
 }
 
-async function getDockerComposeData(projectName: string, environment: string, isProduction: Boolean): Promise<string> {
+async function getDockerComposeData(projectName: string, environment: string, isProduction: boolean): Promise<string> {
     return renderTemplateFile(`${process.cwd()}/templates/docker-compose.template.mustache`, {
         projectName,
         environment,
@@ -112,7 +113,7 @@ async function getDockerComposeData(projectName: string, environment: string, is
     });
 }
 
-async function generateDockerCompose(projectName: string, environment: string, dockerComposeFilesInJson: Boolean): Promise<SpinnerOptions> {
+async function generateDockerCompose(projectName: string, environment: string, dockerComposeFilesInJson: boolean): Promise<SpinnerOptions> {
     const isProduction = !(environment === 'development');
 
     spinnies.add(`create-${environment}-docker`, {
@@ -141,7 +142,7 @@ async function generateTsConfigJson(projectName: string): Promise<SpinnerOptions
 }
 
 async function getDependenciesVersions() {
-    const { wantToSelectVersions }: { wantToSelectVersions: Boolean } = await inquirer.prompt({
+    const { wantToSelectVersions }: { wantToSelectVersions: boolean } = await inquirer.prompt({
         type: 'list',
         message: 'Do you want to select the dependencies versions? (Selecting no, the last version will be selected)',
         name: 'wantToSelectVersions',
@@ -169,7 +170,7 @@ async function getDependenciesVersions() {
 }
 
 async function getDevDependenciesVersions() {
-    const { wantToSelectVersions }: { wantToSelectVersions: Boolean } = await inquirer.prompt({
+    const { wantToSelectVersions }: { wantToSelectVersions: boolean } = await inquirer.prompt({
         type: 'list',
         message: 'Do you want to select the devDependencies versions? (Selecting no, the last version will be selected)',
         name: 'wantToSelectVersions',
@@ -219,13 +220,121 @@ async function generateServerIndex(projectName: string): Promise<SpinnerOptions>
 }
 
 async function getEslintConfigData(): Promise<string> {
-    return renderTemplateFile(`${process.cwd()}/templates/api.eslint.template.mustache`)
+    return renderTemplateFile(`${process.cwd()}/templates/api.eslint.template.mustache`);
 }
 
 async function generateEslintConfig(projectName: string): Promise<SpinnerOptions> {
     spinnies.add('create-eslint-config', { text: 'Creating server/.eslintrc.json' });
     await fs.promises.writeFile(`${process.cwd()}/${projectName}/server/.eslintrc.json`, await getEslintConfigData());
     return spinnies.succeed('create-eslint-config', { text: 'server/.eslintrc.json created!' });
+}
+
+async function getPrettierConfigData(): Promise<string> {
+    return renderTemplateFile(`${process.cwd()}/templates/api.prettier.template.mustache`);
+}
+
+async function generatePrettierConfig(projectName: string): Promise<SpinnerOptions> {
+    spinnies.add('create-prettier-config', { text: 'Creating server/.prettierrc' });
+    await fs.promises.writeFile(`${process.cwd()}/${projectName}/server/.prettierrc`, await getPrettierConfigData());
+    return spinnies.succeed('create-prettier-config', { text: 'server/.prettierrc created!' });
+}
+
+async function getGlobalSetupJestData(): Promise<string> {
+    return renderTemplateFile(`${process.cwd()}/templates/api.jest-setup.template.mustache`);
+}
+
+async function generateGlobalSetupJest(projectName: string): Promise<SpinnerOptions> {
+    spinnies.add('create-setup-jest-config', { text: 'Creating server/global.setup.js' });
+    await fs.promises.writeFile(`${process.cwd()}/${projectName}/server/global.setup.js`, await getGlobalSetupJestData());
+    return spinnies.succeed('create-setup-jest-config', { text: 'server/global.setup.js created!' });
+}
+
+async function getGlobalTeardownJestData(): Promise<string> {
+    return renderTemplateFile(`${process.cwd()}/templates/api.jest-teardown.template.mustache`);
+}
+
+async function generateGlobalTeardownJest(projectName: string): Promise<SpinnerOptions> {
+    spinnies.add('create-teardown-jest-config', { text: 'Creating server/global.teardown.js' });
+    await fs.promises.writeFile(`${process.cwd()}/${projectName}/server/global.teardown.js`, await getGlobalTeardownJestData());
+    return spinnies.succeed('create-teardown-jest-config', { text: 'server/global.teardown.js created!' });
+}
+
+async function getDockerignoreData(): Promise<string> {
+    return renderTemplateFile(`${process.cwd()}/templates/dockerignore.template.mustache`);
+}
+
+async function generateDockerIgnore(folderPath: string): Promise<SpinnerOptions> {
+    spinnies.add(`create-${folderPath}-dockerignore`, { text: `Creating ${folderPath}` });
+    await fs.promises.writeFile(`${process.cwd()}/${folderPath}`, await getDockerignoreData());
+    return spinnies.succeed(`create-${folderPath}-dockerignore`, { text: `${folderPath} created!` });
+}
+
+async function getGitIgnoreData(): Promise<string> {
+    return renderTemplateFile(`${process.cwd()}/templates/gitignore.template.mustache`);
+}
+
+async function generateGitIgnore(folderPath: string): Promise<SpinnerOptions> {
+    spinnies.add(`create-${folderPath}-gitignore`, { text: `Creating ${folderPath}` });
+    await fs.promises.writeFile(`${process.cwd()}/${folderPath}`, await getGitIgnoreData());
+    return spinnies.succeed(`create-${folderPath}-gitignore`, { text: `${folderPath} created!` });
+}
+
+async function getDockerfileData(isProduction: boolean, isServer: boolean): Promise<string> {
+    return renderTemplateFile(
+        `${process.cwd()}/templates/${isServer ? 'api' : 'client'}.${isProduction ? 'Dockerfile' : 'devDockerfile'}.template.mustache`,
+    );
+}
+
+async function generateDockerfile(projectName: string, environment: string, app: string): Promise<SpinnerOptions> {
+    const isProduction = !(environment === 'development');
+    const isServer = !!(app === 'server');
+    const fileName = isProduction ? 'Dockerfile' : 'dev.Dockerfile';
+    spinnies.add(`create-${app}-${environment}-dockerfile`, { text: `Creating ${app}/${fileName}` });
+    await fs.promises.writeFile(`${process.cwd()}/${projectName}/${app}/${fileName}`, await getDockerfileData(isProduction, isServer));
+    return spinnies.succeed(`create-${app}-${environment}-dockerfile`, { text: `${app}/${fileName} created!` });
+}
+
+async function installServerPackages(projectName: string, isNpm: boolean): Promise<SpinnerOptions> {
+    spinnies.add('install-packages', { text: `Installing Server packages with ${chalk.yellow(isNpm ? 'npm' : 'yarn')}` });
+    await spawnAsync('cd', [`./${projectName}/server`, '&&', isNpm ? 'npm' : 'yarn', 'install', '&&', 'cd', '../..'], { shell: true });
+    return spinnies.succeed('install-packages', { text: 'Server packages installed' });
+}
+
+async function executeCreateReactApp(projectName: string, isNpm: boolean): Promise<SpinnerOptions | never> {
+    spinnies.add('execute-create-react-app', {
+        text: `Executing create-react-app with ${chalk.yellow(isNpm ? 'npx create-react-app' : 'yarn create react-app')}`,
+    });
+    try {
+        await spawnAsync(
+            'cd',
+            [
+                `./${projectName}`,
+                '&&',
+                `${isNpm ? 'npm init react-app client --use-npm' : 'yarn create react-app client'}`,
+                '&&',
+                'cd',
+                '..',
+            ],
+            { shell: true },
+        );
+        return spinnies.succeed('execute-create-react-app', { text: 'create-react-app finished!' });
+    } catch (error) {
+        spinnies.fail('execute-create-react-app', { text: 'create-react-app failed! :( Aborting...' });
+        return process.exit(1);
+    }
+}
+
+async function getNginxConfigFileData(projectName: string): Promise<string> {
+    return renderTemplateFile(`${process.cwd()}/templates/client.nginxconf.template.mustache`, { projectName });
+}
+
+async function generateNginxConfigFile(projectName: string): Promise<SpinnerOptions> {
+    spinnies.add('create-client-nginx-config-file', { text: 'Creating client/conf/conf.d/default.conf' });
+    await fs.promises.writeFile(
+        `${process.cwd()}/${projectName}/client/conf/conf.d/default.conf`,
+        await getNginxConfigFileData(projectName),
+    );
+    return spinnies.succeed('create-client-nginx-config-file', { text: 'client/conf/conf.d/default.conf created!' });
 }
 
 export {
@@ -236,5 +345,14 @@ export {
     generateTsConfigJson,
     generateServerIndex,
     generateServerPackageJson,
-    generateEslintConfig
+    generateEslintConfig,
+    generatePrettierConfig,
+    generateGlobalSetupJest,
+    generateGlobalTeardownJest,
+    generateDockerIgnore,
+    generateGitIgnore,
+    generateDockerfile,
+    installServerPackages,
+    executeCreateReactApp,
+    generateNginxConfigFile,
 };

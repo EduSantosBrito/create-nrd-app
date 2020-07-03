@@ -6,6 +6,7 @@
                 "context": "./client",
                 "dockerfile": "{{ dockerfile }}"
             },
+            "stdin_open": true,
             "restart": "always",
             "environment": {
                 "NODE_ENV": "{{ environment }}",

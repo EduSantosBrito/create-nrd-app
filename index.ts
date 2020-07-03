@@ -11,6 +11,15 @@ import {
     generateServerPackageJson,
     generateServerIndex,
     generateEslintConfig,
+    generatePrettierConfig,
+    generateGlobalSetupJest,
+    generateGlobalTeardownJest,
+    generateDockerIgnore,
+    generateGitIgnore,
+    installServerPackages,
+    executeCreateReactApp,
+    generateNginxConfigFile,
+    generateDockerfile,
 } from '@app/functions';
 import inquirer from 'inquirer';
 import { spinnies } from '@app/utis';
@@ -21,15 +30,14 @@ console.log(`\nWelcome to ${chalk.magenta('create-nrd-app')}\n`);
 program
     .arguments('<projectName>')
     .option('-n, --useNpm', 'Use npm to install dependencies')
-    .action(async (projectName: string, { useNpm }: { useNpm: Boolean }) => {
+    .action(async (projectName: string, { useNpm }: { useNpm: boolean }) => {
         console.log(`Starting ${chalk.cyan('create-nrd-app')}...`);
         console.log(`Resolving ${chalk.cyan('server')}...`);
-        console.log({ useNpm });
         await generateFolder(projectName);
         await generateFolder(`${projectName}/server`);
         await generateFolder(`${projectName}/server/src`);
         await generatePackageJson(projectName);
-        const { dockerComposeFilesInJson }: { dockerComposeFilesInJson: Boolean } = await inquirer.prompt({
+        const { dockerComposeFilesInJson }: { dockerComposeFilesInJson: boolean } = await inquirer.prompt({
             type: 'list',
             message: 'Choose file type for docker-compose:',
             name: 'dockerComposeFilesInJson',
@@ -46,5 +54,21 @@ program
         spinnies.succeed('create-server-package-json', { text: 'server/package.json created!' });
         await generateServerIndex(projectName);
         await generateEslintConfig(projectName);
+        await generatePrettierConfig(projectName);
+        await generateGlobalSetupJest(projectName);
+        await generateGlobalTeardownJest(projectName);
+        await generateDockerIgnore(`${projectName}/server/.dockerignore`);
+        await generateGitIgnore(`${projectName}/server/.gitignore`);
+        await generateDockerfile(projectName, 'production', 'server');
+        await generateDockerfile(projectName, 'development', 'server');
+        await installServerPackages(projectName, useNpm);
+        console.log(`Resolving ${chalk.cyan('client')}...`);
+        await executeCreateReactApp(projectName, useNpm);
+        await generateFolder(`${projectName}/client/conf`);
+        await generateFolder(`${projectName}/client/conf/conf.d`);
+        await generateNginxConfigFile(projectName);
+        await generateDockerIgnore(`${projectName}/client/.dockerignore`);
+        await generateDockerfile(projectName, 'production', 'client');
+        await generateDockerfile(projectName, 'development', 'client');
     });
 program.parse(process.argv);
